@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>2048</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+        color: #776e65;
+      }
+
+     
+     html, body {
+  overflow: hidden;
+}
+
+      body {
+        background-color: rgb(204, 198, 190);
+      }
+
+      #toggleMusic {
+  background-color: #776e65; 
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-top: 1.5px;
+}
+
+#toggleMusic:hover {
+  background-color: #cdc1b5;
+}
+
+      .container {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+
+      .head {
+        width: 25rem;
+        height: 9.375rem;
+        margin-top: 1rem;
+      }
+
+      .score {
+        color: white;
+        background-color: #776e65;
+        height: 1.875rem;
+        width: 5.625rem;
+        border-radius: 0.2rem;
+        float: right;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .title {
+        font-size: 3.75rem;
+        font-weight: bold;
+      }
+
+      .board {
+        height: 25rem;
+        width: 25rem;
+        background: #cdc1b5;
+        border: 0.3125rem solid #bbada0;
+        border-radius: 0.3125rem;
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      .tile {
+        height: 5.625rem;
+        width: 5.625rem;
+        border: 0.3125rem solid #bbada0;
+        font-size: 3.125rem;
+        font-weight: bold;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: 500ms all linear;
+      }
+
+      .b2 {
+        background-color: #eee4da;
+        color: #727371;
+      }
+      .b4 {
+        background-color: #ece0ca;
+        color: #727371;
+      }
+      .b8 {
+        background-color: #6d2932;
+        color: white;
+      }
+      .b16 {
+        background-color: #776b5d;
+        color: white;
+      }
+      .b32 {
+        background-color: #944e63;
+        color: white;
+      }
+      .b64 {
+        background-color: #944e63;
+        color: white;
+      }
+      .b128 {
+        background-color: #944e63;
+        color: white;
+      }
+      .b256 {
+        background-color: #944e63;
+        color: white;
+      }
+      .b512 {
+        background-color: #944e63;
+        color: white;
+      }
+      .b1024 {
+        background-color: #43766c;
+        color: white;
+      }
+      .b2048 {
+        background-color: #43766c;
+        color: white;
+      }
+      .b4096 {
+        background-color: #43766c;
+        color: white;
+      }
+      .b8192 {
+        background-color: #43766c;
+        color: white;
+      }
+
+      .footer {
+        width: 25rem;
+        height: 12.5rem;
+        margin-top: 2rem;
+      }
+
+      p {
+        font-size: 1.1rem;
+      }
+
+    </style>
+  </head>
+
+  <body>
+    <div id="top" class="container">
+        <button id="toggleMusic">Toggle Music</button>
+
+        <div class="head">
+            <span class="title">2048</span>
+            <span class="score" id="score">Score: 0</span>
+            <br /><br />
+            <span class="intro">Gabungkan setiap petak sampai <b>2048!</b><br /></span>
+        </div>
+
+        <audio id="backsound" autoplay loop muted>
+            <source src="audio/music.mp3" type="audio/mp3"/>
+            Your browser does not support the audio element.
+        </audio>
+
+        <div class="board" id="board">
+        </div>
+
+        <div class="footer">
+            <p id="howTo">
+                CARA BERMAIN: </b>Gunakan tombol panah untuk memindahkan petak.
+                Petak dengan nomor yang sama akan bergabung menjadi satu ketika
+                bertemu. Tambahkan hingga mencapai 2048!
+            </p>
+        </div>
+    </div>
+
+    <script>
+    var board;
+var score = 0;
+var rows = 4;
+var columns = 4;
+
+window.onload = function() {
+    setGame();
+}
+
+function setGame() {
+
+    board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0]
+    ]
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < columns; c++) {
+            let tile = document.createElement("div");
+            tile.id = r.toString() + "-" + c.toString();
+            let num = board[r][c];
+            updateTile(tile, num);
+            document.getElementById("board").append(tile);
+        }
+    } 
+    setTwo();
+    setTwo();
+
+}
+
+function updateTile(tile, num) {
+    tile.innerText = "";
+    tile.classList.value = "";
+    tile.classList.add("tile");
+    if (num > 0) {
+        tile.innerText = num.toString();
+        if (num <= 4096) {
+            tile.classList.add("b"+num.toString());
+        } else {
+            tile.classList.add("b8192");
+        }                
+    }
+}
+
+document.addEventListener("keyup", (e) => {
+        if (e.code == "ArrowLeft") {
+          slideLeft();
+        } else if (e.code == "ArrowRight") {
+          slideRight();
+        } else if (e.code == "ArrowUp") {
+          slideUp();
+        } else if (e.code == "ArrowDown") {
+          slideDown();
+        }
+        if (isGameOver()) {
+          alert("Game Over! Your Score is: " + score);
+          resetGame();
+        } else {
+          setTwo();
+        }
+        document.getElementById("score").innerText = "Score: " + score;
+      });
+
+      function filterZero(row) {
+        return row.filter((num) => num != 0);
+      }
+
+function slide(row) {
+    row = filterZero(row);
+    for (let i = 0; i < row.length-1; i++){
+        if (row[i] == row[i+1]) {
+            row[i] *= 2;
+            row[i+1] = 0;
+            score += row[i];
+        }
+    } 
+    row = filterZero(row); 
+    while (row.length < columns) {
+        row.push(0);
+    } 
+    return row;
+}
+
+function slideLeft() {
+        for (let r = 0; r < rows; r++) {
+          let row = board[r];
+          row = slide(row);
+          board[r] = row;
+          for (let c = 0; c < columns; c++) {
+            let tile = document.getElementById(
+              r.toString() + "-" + c.toString()
+            );
+            let num = board[r][c];
+            updateTile(tile, num);
+          }
+        }
+      }
+
+function slideRight() {
+        for (let r = 0; r < rows; r++) {
+          let row = board[r];
+          row.reverse();
+          row = slide(row);
+          board[r] = row.reverse();
+          for (let c = 0; c < columns; c++) {
+            let tile = document.getElementById(
+              r.toString() + "-" + c.toString()
+            );
+            let num = board[r][c];
+            updateTile(tile, num);
+          }
+        }
+      }
+
+
+function slideUp() {
+        for (let c = 0; c < columns; c++) {
+          let row = [board[0][c], board[1][c], board[2][c], board[3][c]];
+          row = slide(row);
+          for (let r = 0; r < rows; r++) {
+            board[r][c] = row[r];
+            let tile = document.getElementById(
+              r.toString() + "-" + c.toString()
+            );
+            let num = board[r][c];
+            updateTile(tile, num);
+          }
+        }
+      }
+
+function slideDown() {
+        for (let c = 0; c < columns; c++) {
+          let row = [board[0][c], board[1][c], board[2][c], board[3][c]];
+          row.reverse();
+          row = slide(row);
+          row.reverse();
+          for (let r = 0; r < rows; r++) {
+            board[r][c] = row[r];
+            let tile = document.getElementById(
+              r.toString() + "-" + c.toString()
+            );
+            let num = board[r][c];
+            updateTile(tile, num);
+          }
+        }
+      }
+
+function setTwo() {
+        if (!hasEmptyTile()) {
+          return;
+        }
+        let found = false;
+        while (!found) {
+          let r = Math.floor(Math.random() * rows);
+          let c = Math.floor(Math.random() * columns);
+          if (board[r][c] == 0) {
+            board[r][c] = 2;
+            let tile = document.getElementById(
+              r.toString() + "-" + c.toString()
+            );
+            tile.innerText = "2";
+            tile.classList.add("b2");
+            found = true;
+          }
+        }
+      }
+
+function hasEmptyTile() {
+    let count = 0;
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < columns; c++) {
+            if (board[r][c] == 0) { 
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function isGameOver() {
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < columns; c++) {
+            if (board[r][c] == 0) {
+                return false; 
+            }
+            if ((r < rows - 1 && board[r][c] == board[r + 1][c]) ||
+                (c < columns - 1 && board[r][c] == board[r][c + 1])) {
+                return false; 
+            }
+        }
+    }
+    return true; 
+}
+
+function resetGame() {
+    score = 0;
+    document.getElementById("score").innerText = "Score: " + score;
+
+    document.getElementById("board").innerHTML = "";
+    board = Array.from({ length: rows }, () => Array.from({ length: columns }, () => 0));
+
+    setGame();
+}
+
+document.addEventListener('DOMContentLoaded', (event) => {
+    var audio = document.getElementById('backsound');
+    var toggleButton = document.getElementById('toggleMusic');
+
+    toggleButton.addEventListener('click', function() {
+        if (audio.paused) {
+            audio.play();
+            toggleButton.innerText = "Pause Music";
+        } else {
+            audio.pause();
+            toggleButton.innerText = "Play Music";
+        }
+    });
+});
+
+document.getElementById("toggleMusic").addEventListener("click", function() {
+    var audio = document.getElementById('backsound');
+    audio.muted = !audio.muted;
+});
+
+</script>
+
+  </body>
+</html>
